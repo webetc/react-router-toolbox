@@ -9,7 +9,7 @@ import { Layout, NavDrawer, Panel } from 'react-toolbox/lib/layout'
 import { AppBar } from 'react-toolbox/lib/app_bar'
 import { Navigation } from 'react-toolbox/lib/navigation'
 import { List, ListSubHeader, ListDivider } from 'react-toolbox/lib/list'
-import { Link, ListItem } from './router'
+import { Link, ListItem } from '../router'
 
 type Props = {
     title: string,
