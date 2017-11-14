@@ -1,7 +1,7 @@
 // @flow
 
 import React from 'react'
-import {BrowserRouter as Router, Route} from 'react-router-dom'
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
 import isBrowser from 'react-toolbox/lib/utils/is-browser'
 import breakpoints from 'react-toolbox/lib/utils/breakpoints'
 import { getViewport } from 'react-toolbox/lib/utils/utils'
@@ -13,7 +13,7 @@ import { Link, ListItem } from '../router'
 
 type Props = {
     title: string,
-    menus: any
+    routes: any
 }
 
 const NAV_PERM = 'md'
@@ -55,17 +55,18 @@ export class AppShell extends React.Component {
 
     render() {
         const { sideNavActive } = this.state
-        const { menus, title} = this.props
+        const { routes, title} = this.props
         const useMenuNav = this.state.width <= breakpoints[NAV_PERM]
 
         return (
             <Router>
-                <div>
+                <Switch>
                 {
-                    menus.map((m)=> {
-                        let haveSideNav = useMenuNav || m.leftSide != null
+                    routes.map((route)=> {
+                        let haveSideNav = useMenuNav || route.drawer != null
+                        let showBack = useMenuNav && route.menu == null && route.title != null && route.drawer == null
                         return(
-                            <Route key={m.to} exact={m.exact} path={m.to} render={({match}) => (
+                            <Route key={route.to} exact={route.exact} path={route.to} render={({match}) => (
                                 <Layout>
                                     <NavDrawer
                                         active={haveSideNav && sideNavActive}
@@ -75,29 +76,32 @@ export class AppShell extends React.Component {
                                         }}
                                         permanentAt={haveSideNav ? NAV_PERM : null}
                                     >
-                                        <AppNavDrawerContents Component={m.leftSide} menus={menus} showMenus={useMenuNav} match={match}/>
+                                        <AppNavDrawerContents Component={route.drawer} menus={routes} showMenus={useMenuNav} match={match}/>
                                     </NavDrawer>
 
                                     <AppBar
                                         fixed
-                                        leftIcon={haveSideNav ? 'menu' : null}
+                                        leftIcon={showBack ? 'arrow_back' : haveSideNav ? 'menu' : null}
                                         onLeftIconClick={() => {
-                                            this.handleToggleNav()
+                                            if(showBack)
+                                                window.history.back();
+                                            else
+                                                this.handleToggleNav()
                                         }}
-                                        title={title}
+                                        title={useMenuNav && route.title != null ? route.title : title}
                                     >
-                                        <AppNavContents menus={menus} showMenus={useMenuNav}/>
+                                        <AppNavContents menus={routes} showMenus={useMenuNav}/>
                                     </AppBar>
     
                                     <Panel bodyScroll={true}>
-                                        <Route key={m.to} exact={m.exact} path={m.to} component={m.component}/>
+                                        <Route key={route.to} exact={route.exact} path={route.to} component={route.main}/>
                                     </Panel>
                                 </Layout>
                             )}/>
                         )
                     })
                 }
-                </div>
+                </Switch>
             </Router>
         )
     }
@@ -115,8 +119,8 @@ const AppNavDrawerContents = ({Component, menus, showMenus, match}) => {
         return (
             <List>
                 {
-                    menus.map((m2) => (
-                        <ListItem key={m2.title} to={m2.to} caption={m2.title} selectable ripple/>
+                    menus.filter((m1) => (m1.menu != null)).map((m2) => (
+                        <ListItem key={m2.menu} to={m2.to} caption={m2.menu} selectable ripple/>
                     ))
                 }
             </List>
@@ -125,8 +129,8 @@ const AppNavDrawerContents = ({Component, menus, showMenus, match}) => {
         return (
             <List>
                 {
-                    menus.map((m2) => (
-                        <ListItem key={m2.title} to={m2.to} caption={m2.title} selectable ripple/>
+                    menus.filter((m1) => (m1.menu != null)).map((m2) => (
+                        <ListItem key={m2.menu} to={m2.to} caption={m2.menu} selectable ripple/>
                     ))
                 }
                 <ListDivider />
@@ -141,8 +145,8 @@ const AppNavContents = ({menus, showMenus}) => {
     return showMenus ? null :
         <Navigation type="horizontal">
             {
-                menus.map((m2) => (
-                    <Link key={m2.title} to={m2.to}>{m2.title}</Link>
+                menus.filter((m1) => (m1.menu != null)).map((m2) => (
+                    <Link key={m2.menu} to={m2.to}>{m2.menu}</Link>
                 ))
             }
         </Navigation>
