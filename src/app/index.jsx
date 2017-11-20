@@ -7,18 +7,21 @@ import breakpoints from 'react-toolbox/lib/utils/breakpoints'
 import {getViewport} from 'react-toolbox/lib/utils/utils'
 import {Layout, NavDrawer, Panel} from 'react-toolbox/lib/layout'
 import {AppBar} from 'react-toolbox/lib/app_bar'
-import {Navigation} from 'react-toolbox/lib/navigation';
-import {List, ListDivider} from 'react-toolbox/lib/list';
+import {Navigation} from 'react-toolbox/lib/navigation'
+import {List, ListDivider} from 'react-toolbox/lib/list'
 import {Link, ListItem} from '../router'
+import {themr} from 'react-css-themr'
+
 
 type Props = {
     title: string,
-    routes: any
+    routes: any,
+    theme: any
 }
 
 const NAV_PERM = 'md'
 
-export class AppShell extends React.Component {
+class _AppShell extends React.Component {
 
     props: Props
 
@@ -55,7 +58,7 @@ export class AppShell extends React.Component {
 
     render() {
         const {sideNavActive} = this.state
-        const {routes, title} = this.props
+        const {routes, title, theme} = this.props
         const useMenuNav = this.state.width <= breakpoints[NAV_PERM]
 
         return (
@@ -70,6 +73,7 @@ export class AppShell extends React.Component {
                                          render={({match}) => (
                                              <Layout>
                                                 <NavDrawer
+                                                    className={theme.navDrawer}
                                                     active={haveSideNav && sideNavActive}
                                                     clipped={true}
                                                     onOverlayClick={() => {
@@ -82,6 +86,7 @@ export class AppShell extends React.Component {
                                                 </NavDrawer>
 
                                                 <AppBar
+                                                    className={theme.appBar}
                                                     fixed
                                                     leftIcon={showBack ? 'arrow_back' : haveSideNav ? 'menu' : null}
                                                     onLeftIconClick={() => {
@@ -95,7 +100,7 @@ export class AppShell extends React.Component {
                                                     <AppNavContents menus={routes} showMenus={useMenuNav}/>
                                                 </AppBar>
 
-                                                <Panel bodyScroll={true}>
+                                                <Panel className={theme.panel} bodyScroll={true}>
                                                     <Route key={route.to} exact={route.exact} path={route.to}
                                                            component={route.main}/>
                                                 </Panel>
@@ -177,3 +182,6 @@ const AppNavContents = ({menus, showMenus}) => {
 function filterMenus(menus) {
     return menus.filter((m) => (m.menu != null && (m.secure == null || m.secure() == null)))
 }
+
+
+export const AppShell = themr('AppShell')(_AppShell);
