@@ -16,7 +16,8 @@ import {themr} from 'react-css-themr'
 type Props = {
     title: string,
     routes: any,
-    theme: any
+    theme: any,
+    children: any
 }
 
 const NAV_PERM = 'md'
@@ -58,19 +59,22 @@ class _AppShell extends React.Component {
 
     render() {
         const {sideNavActive} = this.state
-        const {routes, title, theme} = this.props
+        const {routes, title, theme, children} = this.props
         const useMenuNav = this.state.width <= breakpoints[NAV_PERM]
 
         return (
             <Router>
-                <Switch>
+                <div>
+                {children}
+                    <Switch>
                 {
                     routes.map((route) => {
                         let haveSideNav = useMenuNav || route.drawer != null
                         let showBack = useMenuNav && route.menu == null && route.title != null && route.drawer == null
+                        let showMore = useMenuNav && route.actionMenu != null
                         return (
-                            <SecureRoute key={route.to} exact={route.exact} path={route.to} secure={route.secure}
-                                         render={({match}) => (
+                            <SecureRoute key={route.to} exact={route.exact} path={route.to} redirect={route.redirect}
+                                         render={({match, ...rest}) => (
                                              <Layout>
                                                 <NavDrawer
                                                     className={theme.navDrawer}
@@ -97,36 +101,34 @@ class _AppShell extends React.Component {
                                                     }}
                                                     title={useMenuNav && route.title != null ? route.title : title}
                                                 >
-                                                    <AppNavContents menus={routes} showMenus={useMenuNav}/>
+                                                    <AppNavContents menus={routes} showMenus={useMenuNav}
+                                                                    ActionMenu={route.actionMenu}/>
                                                 </AppBar>
 
-                                                <Panel className={theme.panel} bodyScroll={true}>
-                                                    <Route key={route.to} exact={route.exact} path={route.to}
-                                                           component={route.main}/>
-                                                </Panel>
+                                                <AppPanel theme={theme} route={route} match={match} {...rest}/>
                                             </Layout>
                                          )}
                             />
                         )
                     })
                 }
-                </Switch>
+                </Switch></div>
             </Router>
         )
     }
 }
 
 
-const SecureRoute = ({render, secure, ...rest}) => {
-    let secured = secure == null ? null : secure()
+const SecureRoute = ({render, redirect, ...rest}) => {
+    let redirectTo = redirect == null ? null : redirect()
     return (
         <Route {...rest} render={(props) => {
-            if (secured == null)
+            if (redirectTo == null)
                 return render(props)
             else
                 return (
                     <Redirect to={{
-                        pathname: secured,
+                        pathname: redirectTo,
                         state: {from: props.location}
                     }}/>
                 )
@@ -168,16 +170,41 @@ const AppNavDrawerContents = ({Component, menus, showMenus, match}) => {
 }
 
 
-const AppNavContents = ({menus, showMenus}) => {
-    return showMenus ? null :
-        <Navigation type="horizontal">
+const AppNavContents = ({menus, showMenus, ActionMenu}) => {
+    if (showMenus) {
+        return (
+            <Navigation type="horizontal">
+                {ActionMenu != null ? <ActionMenu/> : null}
+            </Navigation>
+        )
+    } else {
+        return <Navigation type="horizontal">
             {
                 filterMenus(menus).map((m2) => (
                     <Link key={m2.menu} to={m2.to}>{m2.menu}</Link>
                 ))
             }
         </Navigation>
+    }
 }
+
+
+class AppPanel extends React.Component {
+
+    shouldComponentUpdate(nextProps) {
+        return (this.props.location.pathname != nextProps.location.pathname || nextProps.route.main !== this.props.route.main)
+    }
+
+    render() {
+        const {theme, route, ...rest} = this.props
+        return (
+            <Panel className={theme.panel} bodyScroll={true}>
+                {React.createElement(route.main, {...rest})}
+            </Panel>
+        )
+    }
+}
+
 
 function filterMenus(menus) {
     return menus.filter((m) => (m.menu != null && (m.secure == null || m.secure() == null)))
