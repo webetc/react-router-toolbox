@@ -31,6 +31,8 @@ class _AppShell extends React.Component {
         width: number
     }
 
+    historyUnlisten = null
+
     constructor(props: Props) {
         super(props);
         this.state = {
@@ -47,6 +49,8 @@ class _AppShell extends React.Component {
 
     componentWillUnmount() {
         window.removeEventListener('resize', this.handleResize)
+        if (this.historyUnlisten != null)
+            this.historyUnlisten()
     }
 
     handleResize = () => {
@@ -57,74 +61,93 @@ class _AppShell extends React.Component {
         this.setState({sideNavActive: !this.state.sideNavActive})
     }
 
-    render() {
-        const {sideNavActive} = this.state
-        const {routes, title, theme, children} = this.props
-        const useMenuNav = this.state.width <= breakpoints[NAV_PERM]
+    closeNav = () => {
+        this.setState({sideNavActive: false})
+    }
 
+    render() {
         return (
             <Router>
-                <div>
-                {children}
-                    <Switch>
-                {
-                    routes.map((route) => {
-                        let haveSideNav = useMenuNav || route.drawer != null
-                        let showBack = useMenuNav && route.menu == null && route.title != null && route.drawer == null
-                        let showMore = useMenuNav && route.actionMenu != null
-                        return (
-                            <SecureRoute key={route.to} exact={route.exact} path={route.to} redirect={route.redirect}
-                                         render={({match, ...rest}) => (
-                                             <Layout>
-                                                <NavDrawer
-                                                    className={theme.navDrawer}
-                                                    active={haveSideNav && sideNavActive}
-                                                    clipped={true}
-                                                    onOverlayClick={() => {
-                                                        this.handleToggleNav()
-                                                    }}
-                                                    permanentAt={haveSideNav ? NAV_PERM : null}
-                                                >
-                                                    <AppNavDrawerContents Component={route.drawer} menus={routes}
-                                                                          showMenus={useMenuNav} match={match}/>
-                                                </NavDrawer>
-
-                                                <AppBar
-                                                    className={theme.appBar}
-                                                    fixed
-                                                    leftIcon={showBack ? 'arrow_back' : haveSideNav ? 'menu' : null}
-                                                    onLeftIconClick={() => {
-                                                        if (showBack)
-                                                            window.history.back();
-                                                        else
-                                                            this.handleToggleNav()
-                                                    }}
-                                                    title={useMenuNav && route.title != null ? route.title : title}
-                                                >
-                                                    <AppNavContents menus={routes} showMenus={useMenuNav}
-                                                                    ActionMenu={route.actionMenu}/>
-                                                </AppBar>
-
-                                                <AppPanel theme={theme} route={route} match={match} {...rest}/>
-                                            </Layout>
-                                         )}
-                            />
-                        )
-                    })
-                }
-                </Switch></div>
+                <Route path='/' render={this.renderLayout}/>
             </Router>
         )
     }
+
+    renderLayout = ({history}) => {
+        const {routes, children} = this.props
+
+        if (this.historyUnlisten == null)
+            this.historyUnlisten = history.listen(this.closeNav)
+
+        return (
+            <div>
+                {children}
+                <Switch>
+                    {
+                        routes.map((route) => (
+                            <SecureRoute key={route.to} path={route.to} exact={route.exact} route={route}
+                                         render={this.renderRouteLayout}/>
+                        ))
+                    }
+                </Switch>
+            </div>
+        )
+    }
+
+    renderRouteLayout = ({route, ...rest}) => {
+        const {sideNavActive} = this.state
+        const {routes, title, theme} = this.props
+        const useMenuNav = this.state.width <= breakpoints[NAV_PERM]
+        const haveSideNav = useMenuNav || route.drawer != null
+        const showBack = useMenuNav && route.menu == null && route.title != null && route.drawer == null
+        const showMore = useMenuNav && route.actionMenu != null
+
+        return (
+            <Layout>
+                <NavDrawer
+                    className={theme.navDrawer}
+                    active={haveSideNav && sideNavActive}
+                    clipped={true}
+                    onOverlayClick={() => {
+                        this.handleToggleNav()
+                    }}
+                    permanentAt={haveSideNav ? NAV_PERM : null}
+                >
+                    <AppNavDrawerContents Component={route.drawer} menus={routes}
+                                          showMenus={useMenuNav} {...rest} />
+                </NavDrawer>
+
+                <AppBar
+                    className={theme.appBar}
+                    fixed
+                    leftIcon={showBack ? 'arrow_back' : haveSideNav ? 'menu' : null}
+                    onLeftIconClick={() => {
+                        if (showBack)
+                            window.history.back();
+                        else
+                            this.handleToggleNav()
+                    }}
+                    title={useMenuNav && route.title != null ? route.title : title}
+                >
+                    <AppNavContents menus={routes} showMenus={useMenuNav}
+                                    ActionMenu={route.actionMenu}/>
+                </AppBar>
+
+                <AppPanel theme={theme} route={route} {...rest}/>
+            </Layout>
+        )
+    }
+
 }
 
 
-const SecureRoute = ({render, redirect, ...rest}) => {
-    let redirectTo = redirect == null ? null : redirect()
+const SecureRoute = ({path, exact, render, route}) => {
+    const redirectTo = route.redirect == null ? null : route.redirect()
+
     return (
-        <Route {...rest} render={(props) => {
+        <Route path={path} exact={exact} render={(props) => {
             if (redirectTo == null)
-                return render(props)
+                return render({route, ...props})
             else
                 return (
                     <Redirect to={{
@@ -137,12 +160,12 @@ const SecureRoute = ({render, redirect, ...rest}) => {
 }
 
 
-const AppNavDrawerContents = ({Component, menus, showMenus, match}) => {
+const AppNavDrawerContents = ({Component, menus, showMenus, ...rest}) => {
     if (Component == null && !showMenus) {
         return (null)
     } else if (!showMenus) {
         return (
-            <Component match={match}/>
+            <Component {...rest} />
         )
     } else if (Component == null) {
         return (
@@ -163,7 +186,7 @@ const AppNavDrawerContents = ({Component, menus, showMenus, match}) => {
                     ))
                 }
                 <ListDivider/>
-                <Component match={match}/>
+                <Component {...rest} />
             </List>
         )
     }
