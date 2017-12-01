@@ -230,7 +230,7 @@ class AppPanel extends React.Component {
 
 
 function filterMenus(menus) {
-    return menus.filter((m) => (m.menu != null && (m.secure == null || m.secure() == null)))
+    return menus.filter((m) => (m.menu != null && (m.redirect == null || m.redirect() == null)))
 }
 
 
