@@ -15,6 +15,7 @@ import {themr} from 'react-css-themr'
 
 type Props = {
     title: string,
+    titleComponent: any,
     routes: any,
     theme: any,
     children: any
@@ -101,6 +102,7 @@ class _AppShell extends React.Component {
         const haveSideNav = useMenuNav || route.drawer != null
         const showBack = useMenuNav && route.menu == null && route.title != null && route.drawer == null
         const showMore = useMenuNav && route.actionMenu != null
+        const TitleComponent = this.props.titleComponent != null ? this.props.titleComponent : TitleContent
 
         return (
             <Layout>
@@ -127,7 +129,7 @@ class _AppShell extends React.Component {
                         else
                             this.handleToggleNav()
                     }}
-                    title={useMenuNav && route.title != null ? route.title : title}
+                    title={<TitleComponent mobile={useMenuNav} routeTitle={route.title} appTitle={title}/>}
                 >
                     <AppNavContents menus={routes} showMenus={useMenuNav}
                                     ActionMenu={route.actionMenu}/>
@@ -158,6 +160,16 @@ const SecureRoute = ({path, exact, render, route}) => {
         }}/>
     )
 }
+
+
+const TitleContent = ({mobile, appTitle, routeTitle}) => {
+    if(mobile && routeTitle != null)
+        return routeTitle
+    else
+        return appTitle
+}
+
+
 
 
 const AppNavDrawerContents = ({Component, menus, showMenus, ...rest}) => {
