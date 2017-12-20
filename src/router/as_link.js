@@ -1,7 +1,9 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import invariant from 'invariant'
-import { createLocation } from 'history'
+import {createLocation} from 'history'
+import {matchPath} from 'react-router'
+
 
 const isModifiedEvent = (event) =>
     !!(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey)
@@ -17,6 +19,7 @@ function asLink(Component) {
                 PropTypes.string,
                 PropTypes.object
             ]).isRequired,
+            matchClass: PropTypes.string,
             innerRef: PropTypes.oneOfType([
                 PropTypes.string,
                 PropTypes.func
@@ -62,7 +65,8 @@ function asLink(Component) {
         }
 
         render() {
-            const {replace, to, innerRef, ...props} = this.props // eslint-disable-line no-unused-vars
+            const {replace, to, innerRef, matchClass, className, ...props} = this.props // eslint-disable-line no-unused-vars
+            let componentClassName = className
 
             invariant(
                 this.context.router,
@@ -72,12 +76,20 @@ function asLink(Component) {
             const {history} = this.context.router
             const location = typeof to === 'string' ? createLocation(to, null, null, history.location) : to
 
+            if (matchClass != null) {
+                let match = matchPath(window.location.pathname, {path: to, exact: true})
+                if (!!match) {
+                    componentClassName += " " + matchClass
+                }
+            }
+
             const href = history.createHref(location)
             return React.createElement(Component, {
                 onClick: this.handleClick,
                 to: href,
                 href: href,
                 ref: innerRef,
+                className: componentClassName,
                 ...props
             })
         }
