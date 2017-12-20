@@ -9,13 +9,14 @@ import {Layout, NavDrawer, Panel} from 'react-toolbox/lib/layout'
 import {AppBar} from 'react-toolbox/lib/app_bar'
 import {Navigation} from 'react-toolbox/lib/navigation'
 import {List, ListDivider} from 'react-toolbox/lib/list'
-import {Link, ListItem} from '../router'
+import {ListItemLink, SimpleLink} from '../router'
 import {themr} from 'react-css-themr'
 
 
 type Props = {
     title: string,
     titleComponent: any,
+    basename: string,
     routes: any,
     theme: any,
     children: any
@@ -68,7 +69,7 @@ class _AppShell extends React.Component {
 
     render() {
         return (
-            <Router>
+            <Router basename={this.props.basename}>
                 <Route path='/' render={this.renderLayout}/>
             </Router>
         )
@@ -184,7 +185,7 @@ const AppNavDrawerContents = ({Component, menus, showMenus, ...rest}) => {
             <List>
                 {
                     filterMenus(menus).map((m2) => (
-                        <ListItem key={m2.menu} to={m2.to} caption={m2.menu} selectable ripple/>
+                        <ListItemLink key={m2.menu} to={m2.to} caption={m2.menu} selectable ripple/>
                     ))
                 }
             </List>
@@ -194,7 +195,7 @@ const AppNavDrawerContents = ({Component, menus, showMenus, ...rest}) => {
             <List>
                 {
                     filterMenus(menus).map((m2) => (
-                        <ListItem key={m2.menu} to={m2.to} caption={m2.menu} selectable ripple/>
+                        <ListItemLink key={m2.menu} to={m2.to} caption={m2.menu} selectable ripple/>
                     ))
                 }
                 <ListDivider/>
@@ -216,7 +217,7 @@ const AppNavContents = ({menus, showMenus, ActionMenu}) => {
         return <Navigation type="horizontal">
             {
                 filterMenus(menus).map((m2) => (
-                    <Link key={m2.menu} to={m2.to}>{m2.menu}</Link>
+                    <SimpleLink key={m2.menu} to={m2.to}>{m2.menu}</SimpleLink>
                 ))
             }
         </Navigation>
