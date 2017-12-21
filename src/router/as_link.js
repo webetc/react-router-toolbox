@@ -73,11 +73,11 @@ function asLink(Component) {
                 'You should not use <Link> outside a <Router>'
             )
 
-            const {history} = this.context.router
+            const {history, route} = this.context.router
             const location = typeof to === 'string' ? createLocation(to, null, null, history.location) : to
 
             if (matchClass != null) {
-                let match = matchPath(window.location.pathname, {path: to, exact: true})
+                let match = matchPath(route.location.pathname, {path: to, exact: true})
                 if (!!match) {
                     componentClassName += " " + matchClass
                 }
