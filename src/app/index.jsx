@@ -117,7 +117,7 @@ class _AppShell extends React.Component {
                     permanentAt={haveSideNav ? NAV_PERM : null}
                 >
                     <AppNavDrawerContents Component={route.drawer} menus={routes}
-                                          showMenus={useMenuNav} {...rest} />
+                                          showMenus={useMenuNav} theme={theme} {...rest} />
                 </NavDrawer>
 
                 <AppBar
@@ -133,7 +133,7 @@ class _AppShell extends React.Component {
                     title={<TitleComponent mobile={useMenuNav} routeTitle={route.title} appTitle={title}/>}
                 >
                     <AppNavContents menus={routes} showMenus={useMenuNav}
-                                    ActionMenu={route.actionMenu}/>
+                                    ActionMenu={route.actionMenu} theme={theme} />
                 </AppBar>
 
                 <AppPanel theme={theme} route={route} {...rest}/>
@@ -173,7 +173,7 @@ const TitleContent = ({mobile, appTitle, routeTitle}) => {
 
 
 
-const AppNavDrawerContents = ({Component, menus, showMenus, ...rest}) => {
+const AppNavDrawerContents = ({Component, menus, showMenus, theme, ...rest}) => {
     if (Component == null && !showMenus) {
         return (null)
     } else if (!showMenus) {
@@ -185,7 +185,7 @@ const AppNavDrawerContents = ({Component, menus, showMenus, ...rest}) => {
             <List>
                 {
                     filterMenus(menus).map((m2) => (
-                        <ListItemLink key={m2.menu} to={m2.to} caption={m2.menu} selectable ripple/>
+                        <ListItemLink matchClass={theme.navMatch} key={m2.menu} to={m2.to} caption={m2.menu} selectable ripple/>
                     ))
                 }
             </List>
@@ -195,7 +195,7 @@ const AppNavDrawerContents = ({Component, menus, showMenus, ...rest}) => {
             <List>
                 {
                     filterMenus(menus).map((m2) => (
-                        <ListItemLink key={m2.menu} to={m2.to} caption={m2.menu} selectable ripple/>
+                        <ListItemLink matchClass={theme.navMatch} key={m2.menu} to={m2.to} caption={m2.menu} selectable ripple/>
                     ))
                 }
                 <ListDivider/>
@@ -206,7 +206,7 @@ const AppNavDrawerContents = ({Component, menus, showMenus, ...rest}) => {
 }
 
 
-const AppNavContents = ({menus, showMenus, ActionMenu}) => {
+const AppNavContents = ({menus, showMenus, ActionMenu, theme}) => {
     if (showMenus) {
         return (
             <Navigation type="horizontal">
@@ -217,7 +217,7 @@ const AppNavContents = ({menus, showMenus, ActionMenu}) => {
         return <Navigation type="horizontal">
             {
                 filterMenus(menus).map((m2) => (
-                    <SimpleLink key={m2.menu} to={m2.to}>{m2.menu}</SimpleLink>
+                    <SimpleLink matchClass={theme.navMatch} key={m2.menu} to={m2.to}>{m2.menu}</SimpleLink>
                 ))
             }
         </Navigation>
