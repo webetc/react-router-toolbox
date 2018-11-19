@@ -6,5 +6,5 @@ import {Button, IconButton} from 'react-toolbox/lib/button'
 
 export const SimpleLink = asLink(Link)
 export const ListItemLink = asLink(ListItem)
-export const ButtonLins = asLink(Button)
+export const ButtonLink = asLink(Button)
 export const IconButtonLink = asLink(IconButton)
