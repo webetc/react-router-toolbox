@@ -1,6 +1,6 @@
 {
   "name": "react-router-toolbox",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "react-router react-toolbox components",
   "main": "./lib",
   "scripts": {

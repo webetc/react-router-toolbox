@@ -184,7 +184,7 @@ const AppNavDrawerContents = ({Component, menus, showMenus, theme, ...rest}) => 
         return (
             <List>
                 {
-                    filterMenus(menus).map((m2) => (
+                    filterDrawerMenus(menus).map((m2) => (
                         <ListItemLink matchClass={theme.navMatch} key={m2.menu} to={m2.to} caption={m2.menu} selectable ripple/>
                     ))
                 }
@@ -194,7 +194,7 @@ const AppNavDrawerContents = ({Component, menus, showMenus, theme, ...rest}) => 
         return (
             <List>
                 {
-                    filterMenus(menus).map((m2) => (
+                    filterDrawerMenus(menus).map((m2) => (
                         <ListItemLink matchClass={theme.navMatch} key={m2.menu} to={m2.to} caption={m2.menu} selectable ripple/>
                     ))
                 }
@@ -242,8 +242,12 @@ class AppPanel extends React.Component {
 }
 
 
-function filterMenus(menus) {
+function filterDrawerMenus(menus) {
     return menus.filter((m) => (m.menu != null && (m.redirect == null || m.redirect() == null)))
+}
+
+function filterMenus(menus) {
+    return menus.filter((m) => (m.appBar != false && m.menu != null && (m.redirect == null || m.redirect() == null)))
 }
 
 
